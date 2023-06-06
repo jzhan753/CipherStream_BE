@@ -29,11 +29,8 @@ wss.on('connection', (ws, req) => {
     // This SID is invalid!
     if (connection == undefined) {
         ws.close();
-        ws.CLOSED
         return;
     }
-
-
 
     switch (sender) {
         case '0':
@@ -48,6 +45,13 @@ wss.on('connection', (ws, req) => {
             if (connection.sender === undefined) {
                 let receivers = connection.receivers
                 console.log(`Sender connected on ${sid}`);
+                ws.on('close', (_code, _reason) => {
+                    receivers.forEach((s, _key, _set) => {
+                        s.close();
+                    });
+                    sockets.delete(sid);
+                    return;
+                });
                 ws.on('message', (data, _) => {
                     console.log(`Sending to ${receivers.size} receivers`);
                     receivers.forEach((s, _key, _set) => {
